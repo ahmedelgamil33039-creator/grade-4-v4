@@ -280,7 +280,12 @@
                     <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-list-check ml-2"></i> مراجعة شاملة لجميع الأسئلة:</h3>
                     <div id="result-breakdown" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
                 </div>
-
+<div id="cert-container" class="hidden pt-2 pb-4">
+    <button type="button" onclick="generateAndDownloadCertificate()" class="w-full btn-3d bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-900 font-black py-4 rounded-2xl text-lg flex items-center justify-center gap-3 shadow-xl cursor-pointer border border-yellow-300/50">
+        <i class="fa-solid fa-medal text-2xl"></i>
+        <span>مبروك! اضغط هنا لتحميل شهادة التقدير الخاصة بك</span>
+    </button>
+</div>
                 <button type="button" onclick="handleReturnFromResult()" class="w-full max-w-2xl mx-auto btn-3d bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-2xl text-base sm:text-lg transition border border-slate-600 cursor-pointer shadow-lg relative z-10 block mt-6">
                     العودة
                 </button>
@@ -319,6 +324,7 @@
                     <button type="button" onclick="switchAdminTab('students')" id="admin-tab-btn-students" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition"><i class="fa-solid fa-users ml-1"></i> الطلاب</button>
                     <button type="button" onclick="switchAdminTab('banned')" id="admin-tab-btn-banned" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition"><i class="fa-solid fa-shield-halved ml-1"></i> التسليمات</button>
                     <button type="button" onclick="switchAdminTab('results')" id="admin-tab-btn-results" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition"><i class="fa-solid fa-square-poll-vertical ml-1"></i> النتائج</button>
+<button type="button" onclick="switchAdminTab('points-matrix')" id="admin-tab-btn-points-matrix" class="admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition"><i class="fa-solid fa-star-half-stroke ml-1"></i> درجات الأسئلة</button>
                 </div>
 
                 <!-- ADMIN SETTINGS & GENERATION MATRIX -->
@@ -336,6 +342,10 @@
                                 <div><label class="block text-xs font-bold text-slate-300 mb-1">المدة (بالدقائق)</label><input type="number" id="admin-input-duration" class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 p-3 rounded-xl text-sm text-white outline-none transition"></div>
                                 <div><label class="block text-xs font-bold text-slate-300 mb-1">حالة النشر</label><select id="admin-input-status" class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 p-3 rounded-xl text-sm text-white outline-none transition cursor-pointer"><option value="published">منشور للطلاب</option><option value="draft">مسودة (غير متاح)</option><option value="closed">مغلق</option></select></div>
                             </div>
+<div>
+    <label class="block text-xs font-bold text-fuchsia-200 mb-1">نسبة النجاح لظهور الشهادة (%)</label>
+    <input type="number" id="admin-input-cert-threshold" min="50" max="100" class="w-full bg-slate-900 border border-purple-500/40 p-2.5 rounded-xl text-sm text-white" placeholder="مثال: 95">
+</div>
                             <div><label class="block text-xs font-bold text-slate-300 mb-1">الرقم السري للإدارة (اتركه فارغاً للحفاظ على القديم)</label><input type="password" id="admin-input-newpass" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 p-3 rounded-xl text-sm text-white outline-none transition"></div>
                         </div>
                         <div class="md:col-span-2 space-y-3 bg-slate-900/50 p-5 rounded-2xl border border-indigo-500/20">
@@ -449,7 +459,8 @@
                     </div>
 
                     <div class="bg-slate-900/80 p-5 rounded-3xl border border-indigo-500/30 space-y-4 shadow-lg">
-                        <h4 class="font-bold text-base text-indigo-300 border-b border-indigo-500/20 pb-2" id="q-form-title">إضافة سؤال جديد يدوياً</h4>
+                        <h4 class="font-bold text-base text-indigo-300 border-b border-indigo-500/20 pb-2" id="q-
+form-title">إضافة سؤال جديد يدوياً</h4>
                         <input type="hidden" id="admin-q-id">
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2 bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
@@ -631,6 +642,50 @@
                         </div>
                     </div>
                 </div>
+<!-- ADMIN 7 TYPES POINTS MATRIX TAB -->
+<div id="admin-tab-points-matrix" class="admin-tab-content space-y-5 hidden text-right">
+    <div class="bg-slate-900/90 border border-indigo-500/40 p-6 rounded-3xl shadow-xl space-y-6">
+        <div>
+            <h4 class="font-bold text-xl text-indigo-300 mb-1"><i class="fa-solid fa-sliders ml-2"></i> إدارة درجات جميع الأسئلة (الـ 7 أنواع)</h4>
+            <p class="text-xs text-slate-400">حدد الدرجة الخاصة بكل نوع سؤال، واضغط تطبيق لتعديل جميع أسئلة البنك فوراً.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-indigo-200 mb-2">1. اختيار من متعدد (MCQ):</label>
+                <input type="number" id="pts-mcq" value="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-emerald-300 mb-2">2. صح أو خطأ (True/False):</label>
+                <input type="number" id="pts-true_false" value="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-sky-300 mb-2">3. أكمل العبارات:</label>
+                <input type="number" id="pts-complete" value="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-fuchsia-300 mb-2">4. صوّب الخطأ:</label>
+                <input type="number" id="pts-correct_error" value="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-teal-300 mb-2">5. خريطة صماء:</label>
+                <input type="number" id="pts-map" value="2" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl">
+                <label class="block text-xs font-bold text-amber-300 mb-2">6. سؤال مقالي:</label>
+                <input type="number" id="pts-essay" value="2" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl sm:col-span-2 lg:col-span-1">
+                <label class="block text-xs font-bold text-rose-300 mb-2">7. لغز استنتاجي:</label>
+                <input type="number" id="pts-puzzle" value="2" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-center text-white font-bold outline-none">
+            </div>
+        </div>
+
+        <button type="button" onclick="applyAll7TypesPoints(this)" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 rounded-2xl text-base transition shadow-lg flex items-center justify-center gap-2 cursor-pointer border border-indigo-400/30">
+            <i class="fa-solid fa-bolt text-yellow-300"></i> تطبيق الدرجات على جميع أسئلة البنك وحفظها
+        </button>
+    </div>
+</div>
             </div>
         </section>
 
@@ -703,7 +758,7 @@
     <!-- SCRIPT ENGINE -->
     <script>
         // *** ضع رابط الـ Web App الخاص بك في المتغير التالي ***
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfvz2GT8x2wEWXdAZji60OODG6D-VUa0g0hUU9BZdJP19VxpKkoFootaW5IV6xOuHk/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYn4M_rM5Zsmg4-L2TUzRPEgwslMmAU5dUQiBukWzr0cnBr5fxCMhba7sZHDs9AKZL/exec"; 
         
         const NEW_BANNER_URL = "https://i.postimg.cc/Y2FdWsdv/ghlaf.jpg";
 
@@ -1071,6 +1126,13 @@
                     breakdown.appendChild(div);
                 });
             }
+const certThreshold = DB.config.certThreshold || 100; 
+const certContainer = document.getElementById('cert-container');
+if (percent >= certThreshold) {
+    certContainer.classList.remove('hidden');
+} else {
+    certContainer.classList.add('hidden');
+}
             navigateTo('screen-result');
         }
 
@@ -1216,6 +1278,19 @@
         function confirmExitQuiz() { isEndingQuiz = true; if (confirm('هل أنت متأكد من إنهاء الاختبار الآن؟ سيتم حفظ الدرجة بناءً على الإجابات الحالية.')) { const q = activeAttempt.questions[activeAttempt.currentIndex]; if (q && (q.type === 'essay' || q.type === 'map' || q.type === 'puzzle')) { const val = document.getElementById('essay-student-input').value.trim(); activeAttempt.answers[q.questionId] = val || 'لم تتم الإجابة'; } finishQuiz(false); } else { isEndingQuiz = false; } }
 
         async function finishQuiz(isTimeOut = false) {
+// --- كود الإيقاف ومنع الضغط المزدوج ---
+            let endBtn = document.querySelector('button[onclick="confirmExitQuiz()"]');
+            if(endBtn) {
+                endBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i> جاري الحفظ...';
+                endBtn.style.opacity = '0.5';
+                endBtn.style.pointerEvents = 'none'; // شل حركة الزرار
+            }
+            
+            let nextBtn = document.getElementById('btn-next-essay');
+            if(nextBtn) {
+                 nextBtn.style.pointerEvents = 'none'; // شل حركة زرار التالي لو موجود
+            }
+            // --------------------------------------
             clearInterval(timerInterval); activeAttempt.isCompleted = true; clearActiveAttemptState(); isEndingQuiz = false;
             let objQuestions = activeAttempt.questions.filter(q => q.type !== 'essay' && q.type !== 'map' && q.type !== 'puzzle');
             let essayQuestions = activeAttempt.questions.filter(q => q.type === 'essay' || q.type === 'map' || q.type === 'puzzle');
@@ -1264,7 +1339,7 @@
         function logoutAdmin() { initApp(); navigateTo('screen-home'); }
 
         function switchAdminTab(tabName) {
-            ['settings', 'curriculum', 'questions', 'bulk', 'grading', 'students', 'banned', 'results'].forEach(t => { const tab = document.getElementById(`admin-tab-${t}`); const btn = document.getElementById(`admin-tab-btn-${t}`); if(tab) tab.classList.add('hidden'); if(btn) btn.className = 'admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition'; });
+           ['settings', 'curriculum', 'questions', 'bulk', 'grading', 'students', 'banned', 'results', 'points-matrix'].forEach(t => { const tab = document.getElementById(`admin-tab-${t}`); const btn = document.getElementById(`admin-tab-btn-${t}`); if(tab) tab.classList.add('hidden'); if(btn) btn.className = 'admin-tab-btn px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap cursor-pointer transition'; });
             const aTab = document.getElementById(`admin-tab-${tabName}`); const aBtn = document.getElementById(`admin-tab-btn-${tabName}`); if(aTab) aTab.classList.remove('hidden'); if(aBtn) aBtn.className = 'admin-tab-btn active px-4 py-2.5 rounded-xl bg-indigo-600 text-white whitespace-nowrap cursor-pointer transition shadow-lg';
             if (tabName === 'settings') updateSmartCounters();
             if (tabName === 'grading') renderAdminGrading(); if (tabName === 'banned') renderAdminBanned(); if (tabName === 'results') renderAdminResults();
@@ -1302,6 +1377,7 @@
         }
 
         function previewBannerInput(url) {
+document.getElementById('admin-input-cert-threshold').value = DB.config.certThreshold || 100;
             const prev = document.getElementById('admin-banner-preview'); const fallback = document.getElementById('admin-banner-fallback');
             if (url && url.trim().length > 5) { prev.src = url.trim(); prev.classList.remove('hidden'); fallback.classList.add('hidden'); prev.onerror = () => { prev.classList.add('hidden'); fallback.classList.remove('hidden'); }; } 
             else { prev.classList.add('hidden'); fallback.classList.remove('hidden'); }
@@ -1324,6 +1400,7 @@
         }
 
         async function saveAdminSettings() {
+DB.config.certThreshold = parseInt(document.getElementById('admin-input-cert-threshold').value) || 100;
             DB.config.title = document.getElementById('admin-input-title').value.trim() || DB.config.title; DB.config.teacherName = document.getElementById('admin-input-teacher').value.trim(); DB.config.teacherPhone = document.getElementById('admin-input-phone').value.trim(); DB.config.durationMinutes = parseInt(document.getElementById('admin-input-duration').value) || 30; DB.config.status = document.getElementById('admin-input-status').value;
             
             DB.config.qTargets = {};
@@ -1796,6 +1873,97 @@
         }
         
         window.onload = fetchCloudData;
+function generateAndDownloadCertificate() {
+    showToast('جاري تجهيز الشهادة، يرجى الانتظار...', 'fa-spinner', false);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = "https://i.postimg.cc/d3xKWbgt/Certificate-of-appreciation-design-2K-20261002175349.jpg"; // رابط شهادتك الموحد
+    
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+       ctx.textAlign = 'center';
+        
+        // لون بنفسجي  أنيق
+        ctx.fillStyle = '#1800ad'; 
+        
+        // خط Arial بحجم 42
+        ctx.font = 'bold 42px Arial, sans-serif'; 
+        
+        // اسم الطالب (في مكانه الصحيح تماماً)
+        ctx.fillText(currentStudent.name, canvas.width * 0.72, canvas.height * 0.590); 
+        
+        // كتابة الدرجة
+        ctx.font = 'bold 42px Arial, sans-serif';
+        const scoreText = document.getElementById('result-score').innerText;
+        
+        // ظبطنا الارتفاع على 0.67 عشان تنزل في منتصف البانر التاني بالمللي
+        ctx.fillText(scoreText, canvas.width * 0.69, canvas.height * 0.70);
+        
+        // التحميل المباشر كصورة
+        const link = document.createElement('a');
+        link.download = `شهادة_تقدير_${currentStudent.name}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 1.0);
+        link.click();
+        
+        showToast('تم تحميل الشهادة بنجاح! 🎓', 'fa-check');
+    };
+    img.onerror = function() {
+        showToast('خطأ في تحميل القالب، حاول مرة أخرى.', 'fa-times', true);
+    };
+}
+async function applyAll7TypesPoints(btn) {
+    const ptsMap = {
+        'mcq': parseInt(document.getElementById('pts-mcq').value) || 1,
+        'true_false': parseInt(document.getElementById('pts-true_false').value) || 1,
+        'complete': parseInt(document.getElementById('pts-complete').value) || 1,
+        'correct_error': parseInt(document.getElementById('pts-correct_error').value) || 1,
+        'map': parseInt(document.getElementById('pts-map').value) || 2,
+        'essay': parseInt(document.getElementById('pts-essay').value) || 2,
+        'puzzle': parseInt(document.getElementById('pts-puzzle').value) || 2
+    };
+
+    let modifiedCount = 0;
+    if (!DB.questions || DB.questions.length === 0) {
+        if(typeof showToast === 'function') showToast('البنك فارغ حالياً! مفيش أسئلة تتعدل.', 'fa-triangle-exclamation', true);
+        else alert('البنك فارغ حالياً!');
+        return;
+    }
+
+    DB.questions.forEach(q => {
+        let t = q.type || 'mcq';
+        if (ptsMap[t] !== undefined) {
+            q.points = ptsMap[t];
+            modifiedCount++;
+        }
+    });
+
+    if (modifiedCount > 0) {
+        let originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ والتحديث...';
+        btn.style.pointerEvents = 'none';
+
+        try {
+            await saveDatabase();
+            if(typeof showToast === 'function') showToast(`تم تحديث درجات ${modifiedCount} سؤال بنجاح!`, 'fa-check');
+            else alert(`تم تحديث ${modifiedCount} سؤال بنجاح!`);
+            
+            if(typeof renderAdminQuestions === 'function') renderAdminQuestions();
+        } catch(e) {
+            if(typeof showToast === 'function') showToast('حدث خطأ أثناء الحفظ!', 'fa-bug', true);
+            else alert('حدث خطأ أثناء الحفظ!');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.style.pointerEvents = 'auto';
+        }
+    } else {
+        if(typeof showToast === 'function') showToast('لم يتم العثور على أسئلة لتعديلها.', 'fa-circle-info');
+    }
+}
     </script>
 </body>
 </html>
